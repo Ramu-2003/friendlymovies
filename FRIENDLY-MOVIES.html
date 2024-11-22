@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4267B2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #365899;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            background: #f0f2f5;
+        }
+
+        .tab.active {
+            background: #4267B2;
+            color: white;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .movie-slot {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #adminPanel, #userPanel, #registerForm {
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Form -->
+    <div id="loginForm" class="container">
+        <h2>Login</h2>
+        <div class="form-group">
+            <input type="email" id="loginEmail" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+            <input type="password" id="loginPassword" placeholder="Password" required>
+        </div>
+        <button onclick="login()">Login</button>
+        <button onclick="showRegister()">Register</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="registerForm" class="container">
+        <h2>Register</h2>
+        <div class="form-group">
+            <input type="email" id="registerEmail" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+            <input type="password" id="registerPassword" placeholder="Password" required>
+        </div>
+        <button onclick="register()">Register</button>
+        <button onclick="showLogin()">Back to Login</button>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="container">
+        <h2>Admin Panel</h2>
+        <div class="tabs">
+            <div class="tab active" onclick="showSecureTab()">Secure</div>
+            <div class="tab" onclick="showUploadTab()">Upload Movies</div>
+        </div>
+
+        <!-- Secure Tab -->
+        <div id="secureTab">
+            <div class="form-group">
+                <input type="text" id="pinInput" placeholder="Enter 4-digit PIN" maxlength="4">
+            </div>
+            <button onclick="savePin()">Save PIN</button>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="uploadTab" class="hidden">
+            <div class="form-group">
+                <input type="text" id="verifyPin" placeholder="Verify PIN">
+            </div>
+            <div class="form-group">
+                <input type="file" id="movieUpload" accept="video/*">
+            </div>
+            <button onclick="verifyPinAndUpload()">Upload Movie</button>
+        </div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- User Panel -->
+    <div id="userPanel" class="container">
+        <h2>Movies Website</h2>
+        <div class="movie-grid" id="movieGrid"></div>
+        <div class="form-group">
+            <input type="text" id="passkey" placeholder="Enter Passkey">
+        </div>
+        <button onclick="verifyPasskey()">Access Movie</button>
+        <button onclick="logout()">Sign Out</button>
+    </div>
+
+    <script>
+        // Admin credentials
+        const adminCredentials = {
+            email: 'ramu4012y@gmail.com',
+            password: 'admin123'
+        };
+
+        // Store for users and movies
+        let users = [];
+        let movies = [];
+        let savedPin = '';
+        let isPasskeyVerified = false;
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('userPanel').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showSecureTab() {
+            document.getElementById('secureTab').style.display = 'block';
+            document.getElementById('uploadTab').style.display = 'none';
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab')[0].classList.add('active');
+        }
+
+        function showUploadTab() {
+            document.getElementById('secureTab').style.display = 'none';
+            document.getElementById('uploadTab').style.display = 'block';
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab')[1].classList.add('active');
+        }
+
+        function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (email && password) {
+                users.push({ email, password });
+                alert('Registration successful!');
+                showLogin();
+            } else {
+                alert('Please fill all fields!');
+            }
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (email === adminCredentials.email && password === adminCredentials.password) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                showSecureTab();
+            } else {
+                const user = users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('userPanel').style.display = 'block';
+                } else {
+                    alert('Invalid credentials!');
+                }
+            }
+        }
+
+        function savePin() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin.length === 4 && /^\d+$/.test(pin)) {
+                savedPin = pin;
+                localStorage.setItem('adminPin', pin);
+                alert('PIN saved successfully!');
+            } else {
+                alert('Please enter a valid 4-digit PIN!');
+            }
+        }
+
+        function verifyPinAndUpload() {
+            const verifyPin = document.getElementById('verifyPin').value;
+            if (verifyPin === savedPin) {
+                const fileInput = document.getElementById('movieUpload');
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const movie = {
+                        name: file.name,
+                        path: URL.createObjectURL(file)
+                    };
+                    movies.push(movie);
+                    alert('Movie uploaded successfully!');
+                } else {
+                    alert('Please select a movie file!');
+                }
+            } else {
+                alert('Invalid PIN!');
+            }
+        }
+
+        function displayMovies() {
+            const movieGrid = document.getElementById('movieGrid');
+            movieGrid.innerHTML = '';
+            movies.forEach(movie => {
+                const movieSlot = document.createElement('div');
+                movieSlot.className = 'movie-slot';
+                movieSlot.innerHTML = `
+                    <h3>${movie.name}</h3>
+                    <video width="100%" controls>
+                        <source src="${movie.path}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+                movieGrid.appendChild(movieSlot);
+            });
+        }
+
+        function verifyPasskey() {
+            const passkey = document.getElementById('passkey').value;
+            if (passkey === savedPin) {
+                alert('Access granted! You can now watch or download movies.');
+                isPasskeyVerified = true;
+                displayMovies();
+            } else {
+                alert('Invalid passkey!');
+                isPasskeyVerified = false;
+            }
+        }
+
+        function logout() {
+            isPasskeyVerified = false;
+            showLogin();
+        }
+
+        // Initialize the app
+        showLogin();
+    </script>
+</body>
+</html>
